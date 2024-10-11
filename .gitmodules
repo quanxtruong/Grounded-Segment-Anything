@@ -7,4 +7,4 @@
 	url = https://github.com/BingfengYan/VISAM
 [submodule "recognize-anything"]
 	path = recognize-anything
-	url = https://github.com/quanxtruong/recognize-anything.git
+	url = https://github.com/xinyu1205/recognize-anything.git
