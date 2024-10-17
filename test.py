@@ -18,10 +18,35 @@ cy = 364.21429443359375
 fx = 614.5958251953125
 fy = 614.3775634765625
 
+# cx = 957.9860229492188
+# cy = 546.5714111328125
+# fx = 921.8936767578125
+# fy = 921.5663452148438
+
 K = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]]) ## takes us from 3d point to 2d pixel coords
 K_inv = np.eye(4)
 K_inv[:3, :3] = K
 K_inv = np.linalg.inv(K_inv) ## takes us from 2d pixel coords to 3d point
+
+k1 = 0.4219205677509308
+k2 = -2.3591108322143555
+k3 = 1.3102449178695679
+k4 = 0.3047582805156708
+k5 = -2.1945600509643555
+k6 = 1.2463057041168213
+
+p2 = -0.0004227574390824884
+p1 = 0.0006175598246045411
+
+D = np.array([k1, k2, p1, p2, k3, k4, k5, k6])
+
+map1, map2 = np.array([]), np.array([])
+map1, map2 = cv2.initUndistortRectifyMap(K, D, np.array([]), K, (1280, 720), cv2.CV_32FC1, map1, map2)
+
+def undistortImage(in_mat):
+    out = np.array([])
+    out = cv2.remap(in_mat, map1, map2, cv2.INTER_NEAREST, out)
+    return out
 
 vis = o3d.visualization.Visualizer()
 
@@ -34,6 +59,7 @@ while True:
     if not (ret_depth):
         continue
 
+    depth_image = undistortImage(depth_image)
     depth_image = depth_image.astype(np.float32)
 
     cv2.imshow('Depth Image', depth_image)
@@ -42,8 +68,8 @@ while True:
     ## Processing each pixel
     rows, cols = depth_image.shape
     pointcloud = np.zeros((rows, cols, 3))
-    for u in range(0, cols):
-        for v in range(0, rows):
+    for u in range(0, cols, 3):
+        for v in range(0, rows, 3):
             depth_value = depth_image[v, u] * 0.001
             if depth_value == 0.0:
                 depth_value = 8.
@@ -63,4 +89,5 @@ while True:
     vis.add_geometry(pcd)
     vis.run()
     vis.destroy_window()
+
 
